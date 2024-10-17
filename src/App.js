@@ -1,12 +1,12 @@
 import React from 'react';
-import Messager from './Messager';
+import Workspace from './Workspace';
 
 function App() {
   return (
     <div className="app">
       <main>
         <div>
-          <Messager />
+          <Workspace />
         </div>
       </main>
     </div>

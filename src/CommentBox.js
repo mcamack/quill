@@ -36,23 +36,17 @@ const createThumbnail = (dataURL, width = 50, height = 50) => {
     });
 };
 
-const CommentBox = ({ topic, messages, setMessages, editor, setNewMessage, setShowEditor }) => {
+const CommentBox = ({ topic, messages, setMessages, editor, setNewMessage, setShowEditor, setIsCommentPanelOpen }) => {
     const [comment, setComment] = useState('');
     const [loading, setLoading] = useState(false);
     const quillRef = useRef(null);
 
     const handleSend = async () => {
         const currentMessage = quillRef.current.getEditor().getContents();
-
-        if (currentMessage.ops.length === 1 && currentMessage.ops[0].insert.trim() === '') {
-            alert('Comment cannot be empty!');
-            return;
-        }
-
         setLoading(true);
 
         try {
-            if (editor) {
+            if (editor) { //POST Image and Comment
                 const dataUrl = await editor.render();
                 if (dataUrl) {
                     const blob = dataURLtoBlob(dataUrl);
@@ -71,10 +65,15 @@ const CommentBox = ({ topic, messages, setMessages, editor, setNewMessage, setSh
                     await postComment(topic, commentDoc)
                     setNewMessage(true);
                     setShowEditor(false);
+                    setIsCommentPanelOpen(true);
                 }
-            } else {
+            } else { //POST Text Comment Only
+                if (currentMessage.ops.length === 1 && currentMessage.ops[0].insert.trim() === '') {
+                    alert('Comment cannot be empty!');
+                    return;
+                }
                 const textComment = {
-                    item: comment,
+                    item: currentMessage,
                 };
 
                 await postComment(topic, textComment)
@@ -103,7 +102,7 @@ const CommentBox = ({ topic, messages, setMessages, editor, setNewMessage, setSh
                 endIcon={<SendIcon />}
                 onClick={handleSend}
                 disabled={loading}
-                style={{ marginTop: '20px' }}
+                style={{ marginTop: '40px' }}
                 fullWidth
             >
                 {loading ? 'Sending...' : 'Post Comment'}
