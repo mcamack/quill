@@ -1,7 +1,7 @@
 // src/components/CommentPanel.jsx
 import React, { useEffect, useState, useRef } from 'react';
 import ReactQuill from 'react-quill-new';
-import 'react-quill-new/dist/quill.snow.css';
+// import 'react-quill-new/dist/quill.snow.css';
 import { Drawer, Button, IconButton, Typography, Alert, CircularProgress, TextField } from '@mui/material';
 import SendIcon from '@mui/icons-material/Send';
 import CloseIcon from '@mui/icons-material/Close';

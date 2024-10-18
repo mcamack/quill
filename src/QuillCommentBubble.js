@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import ReactQuill from 'react-quill-new';
-import 'react-quill-new/dist/quill.snow.css';
+// import 'react-quill-new/dist/quill.snow.css';
 import { Drawer, Button, IconButton, Typography } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import { Modal, Box, CircularProgress } from '@mui/material';
