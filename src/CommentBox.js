@@ -1,10 +1,27 @@
-import React, { useState, useRef } from 'react';
-import ReactQuill from 'react-quill-new';
-import 'react-quill-new/dist/quill.snow.css';
+import React, { useState, useRef, useCallback } from 'react';
 import { Button } from '@mui/material';
 import SendIcon from '@mui/icons-material/Send';
 import { uploadImage } from './api/imageApi';
 import { postComment } from './api/commentApi';
+
+// Import and register quill-mention
+import ReactQuill, { Quill } from 'react-quill-new';
+// import ReactQuill from 'react-quill-new';
+import 'react-quill-new/dist/quill.snow.css';
+import 'quill-mention/dist/quill.mention.css';
+
+// // import "quill-mention/autoregister";
+// import { Mention } from 'quill-mention';
+// Quill.register('modules/mention', Mention);
+
+import { Mention, MentionBlot } from "quill-mention";
+Quill.register({ "blots/mention": MentionBlot, "modules/mention": Mention });
+
+
+// ///// quill-mention^4.1.0
+// // import 'quill-mention';
+// import quillMention from 'quill-mention';
+// Quill.register('modules/mention', quillMention);
 
 // Utility function to convert dataURL to Blob
 const dataURLtoBlob = (dataURL) => {
@@ -41,6 +58,14 @@ const CommentBox = ({ topic, messages, setMessages, editor, setNewMessage, setSh
     const [loading, setLoading] = useState(false);
     const quillRef = useRef(null);
 
+    const userList = [
+        { id: 1, value: 'alice' },
+        { id: 2, value: 'bob' },
+        { id: 3, value: 'charlie' },
+        { id: 4, value: 'david' },
+        { id: 5, value: 'emma' },
+    ]; // Example list of users
+
     const handleSend = async () => {
         const currentMessage = quillRef.current.getEditor().getContents();
         setLoading(true);
@@ -53,7 +78,7 @@ const CommentBox = ({ topic, messages, setMessages, editor, setNewMessage, setSh
                     const formData = new FormData();
                     formData.append('file', blob, 'annotated_image.png');
 
-                    const imageResponse = await uploadImage(formData)
+                    const imageResponse = await uploadImage(formData);
                     const thumbnailDataURL = await createThumbnail(dataUrl, 100, 100);
 
                     const commentDoc = {
@@ -62,7 +87,7 @@ const CommentBox = ({ topic, messages, setMessages, editor, setNewMessage, setSh
                         thumbnail: thumbnailDataURL,
                     };
 
-                    await postComment(topic, commentDoc)
+                    await postComment(topic, commentDoc);
                     setNewMessage(true);
                     setShowEditor(false);
                     setIsCommentPanelOpen(true);
@@ -76,7 +101,7 @@ const CommentBox = ({ topic, messages, setMessages, editor, setNewMessage, setSh
                     item: currentMessage,
                 };
 
-                await postComment(topic, textComment)
+                await postComment(topic, textComment);
                 setNewMessage(true);
             }
         } catch (error) {
@@ -87,14 +112,118 @@ const CommentBox = ({ topic, messages, setMessages, editor, setNewMessage, setSh
         }
     };
 
+    const atValues = [
+        { id: 1, value: "Fredrik Sundqvist" },
+        { id: 2, value: "Patrik Sjölin" }
+    ];
+    const hashValues = [
+        { id: 3, value: "Fredrik Sundqvist 2" },
+        { id: 4, value: "Patrik Sjölin 2" }
+    ];
+
+    const modules = {
+        mention: {
+            allowedChars: /^[A-Za-z\sÅÄÖåäö]*$/,
+            mentionDenotationChars: ["@", "#"],
+            source: function (searchTerm, renderList, mentionChar) {
+                let values;
+
+                if (mentionChar === "@") {
+                    values = atValues;
+                } else {
+                    values = hashValues;
+                }
+
+                if (searchTerm.length === 0) {
+                    renderList(values, searchTerm);
+                } else {
+                    const matches = [];
+                    for (let i = 0; i < values.length; i++)
+                        if (
+                            ~values[i].value.toLowerCase().indexOf(searchTerm.toLowerCase())
+                        )
+                            matches.push(values[i]);
+                    renderList(matches, searchTerm);
+                }
+            }
+        }
+    }
+
+    // Quill.register({ "modules/mention2": Mention });
+
+    const someFunc = (searchTerm, renderList, mentionChar) => {
+        let values;
+
+        if (mentionChar === "@") {
+            values = atValues;
+        } else {
+            values = hashValues;
+        }
+
+        if (searchTerm.length === 0) {
+            renderList(values, searchTerm);
+        } else {
+            const matches = [];
+            for (let i = 0; i < values.length; i++)
+                if (
+                    ~values[i].value.toLowerCase().indexOf(searchTerm.toLowerCase())
+                )
+                    matches.push(values[i]);
+            renderList(matches, searchTerm);
+        }
+    }
+
     return (
         <>
             <ReactQuill
                 ref={quillRef}
-                theme="snow"
+                // theme="snow"
                 value={comment}
                 onChange={setComment}
                 style={{ height: '100px', marginTop: '0px' }}
+                // modules={{modules}}
+                modules={{
+                    mention: {
+                        allowedChars: /^[A-Za-z\sÅÄÖåäö]*$/,
+                        mentionDenotationChars: ["@", "#"],
+                        onSelect: useCallback((item, insertItem) => {
+                            console.log(item);//Will have the added suggestion/Tag
+                            const quillEditor = quillRef.current.getEditor();
+                            const range = quillEditor.getSelection();
+                            if (range) {
+                                quillEditor.insertText(range.index, `${item.value} `, 'user');
+                                quillEditor.setSelection(range.index + item.value.length + 2);
+                            }
+                            setTimeout(() => {
+                                const mentionList = document.querySelector('.ql-mention-list');
+                                if (mentionList) {
+                                    mentionList.style.display = 'none';
+                                }
+                            }, 0);
+                        }, []),
+                        source: useCallback((searchTerm, renderList, mentionChar) => {
+                            let values;
+
+                            if (mentionChar === "@") {
+                                values = atValues;
+                            } else {
+                                values = hashValues;
+                            }
+
+                            if (searchTerm.length === 0) {
+                                renderList(values, searchTerm);
+                            } else {
+                                const matches = [];
+                                for (let i = 0; i < values.length; i++)
+                                    if (
+                                        ~values[i].value.toLowerCase().indexOf(searchTerm.toLowerCase())
+                                    )
+                                        matches.push(values[i]);
+                                renderList(matches, searchTerm);
+                            }
+                        }, []),
+                    }
+                }}
             />
             <Button
                 variant="contained"
