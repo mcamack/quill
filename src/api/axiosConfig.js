@@ -11,7 +11,7 @@ export const imageApi = axios.create({
 
 export const commentApi = axios.create({
     baseURL: 'http://localhost:8001', // Base URL for your API
-    timeout: 5000, // Timeout after 5 seconds
+    timeout: 10000, // Timeout after 5 seconds
     headers: {
       'Content-Type': 'application/json', // Default content type
     },

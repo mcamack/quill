@@ -8,12 +8,27 @@ let activeDropdown = null; // Track the active dropdown
 // Custom MentionBlot for handling mentions
 class MentionBlot extends Embed {
   static create(value) {
+    console.log("VALUE: " + value)
     const node = super.create();
     node.setAttribute('data-id', value.id);
     node.innerHTML = `${value.value}`;
     node.classList.add('mention-default'); // Add default formatting class
-    node.style.backgroundColor = 'green'; // Set background color to green
-    node.style.color = 'white'; // Set text color to white
+    
+    // Set styling based on mention character
+    if (value.type == "user") {
+      console.log("user")
+      node.setAttribute('type', "user");
+      node.style.backgroundColor = 'green';
+      node.style.color = 'white';
+    } else if (value.type == "artifact") {
+      node.setAttribute('type', "artifact");
+      console.log("atifact")
+      node.style.backgroundColor = 'blue';
+      node.style.color = 'white';
+    }
+
+    // node.style.backgroundColor = 'green'; // Set background color to green
+    // node.style.color = 'white'; // Set text color to white
 
     node.addEventListener('mouseover', (e) => {
       e.stopPropagation();
@@ -113,6 +128,7 @@ class MentionBlot extends Embed {
   static value(node) {
     return {
       id: node.getAttribute('data-id'),
+      type: node.getAttribute('type'),
       value: node.innerText.slice(1)
     };
   }

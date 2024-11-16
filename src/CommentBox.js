@@ -71,20 +71,28 @@ const CommentBox = ({ topic, messages, setMessages, editor, setNewMessage, setSh
                                 // Check for @ user tag
                                 var mentionStart = -1;
                                 mentionStart = quillEditor.getText(0, range.index).lastIndexOf('@', range.index);
-                                
-                                if (mentionStart === -1){
-                                    mentionStart = quillEditor.getText(0, range.index).lastIndexOf('#', range.index);
-                                }
-                                console.log(mentionStart);
-
                                 if (mentionStart !== -1) {
                                     quillEditor.deleteText(mentionStart, range.index - mentionStart);
                                     quillEditor.insertEmbed(mentionStart, 'mention', {
                                         id: item.id,
+                                        type: "user",
                                         value: item.value
                                     });
                                     quillEditor.setSelection(mentionStart + item.value.length + 2);
+                                } else {
+                                    // Check for # artifact tag
+                                    mentionStart = quillEditor.getText(0, range.index).lastIndexOf('#', range.index);
+                                    if (mentionStart !== -1) {
+                                        quillEditor.deleteText(mentionStart, range.index - mentionStart);
+                                        quillEditor.insertEmbed(mentionStart, 'mention', {
+                                            id: item.id,
+                                            type: "artifact",
+                                            value: item.value
+                                        });
+                                        quillEditor.setSelection(mentionStart + item.value.length + 2);
+                                    }
                                 }
+
                                 console.log(quillEditor.getContents());
                             }
                             setTimeout(() => {

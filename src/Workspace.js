@@ -1,5 +1,7 @@
-import React, { useState } from 'react';
-import { Button, FormControl, InputLabel, Box, FormGroup, FormControlLabel, Checkbox, Select, MenuItem } from '@mui/material';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import { Button, FormControl, InputLabel, Box, FormGroup, FormControlLabel, Checkbox, Select, MenuItem, Drawer, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Accordion, AccordionSummary, AccordionDetails } from '@mui/material';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import CommentPanel from './CommentPanel';
 import MarkupImage from './MarkupImage';
 
@@ -9,6 +11,17 @@ export default function Workspace({ post }) {
   const [newMessage, setNewMessage] = useState(false);
   const [selectedImages, setSelectedImages] = useState(['/SammyTest.jpg']); // Default selected image
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [relationships, setRelationships] = useState({ requirements: [], analyses: [] });
+
+  // useEffect(() => {
+  //   axios.get('/api/v1/relationships')
+  //     .then(response => {
+  //       setRelationships(response.data);
+  //     })
+  //     .catch(error => {
+  //       console.error('Error fetching relationships:', error);
+  //     });
+  // }, []);
 
   const handleOpenCommentPanel = () => {
     setIsCommentPanelOpen(true);
@@ -40,7 +53,7 @@ export default function Workspace({ post }) {
       style={{
         position: 'relative',
         width: '100vw',
-        height: '100vh',
+        height: '50vh',
         // overflow: 'hidden' // Ensure the draggable cannot overflow outside
       }}>
       <Box>
@@ -91,6 +104,8 @@ export default function Workspace({ post }) {
         </FormControl>
       </Box>
 
+
+
       <CommentPanel
         open={isCommentPanelOpen}
         onClose={handleCloseCommentPanel}
@@ -113,6 +128,76 @@ export default function Workspace({ post }) {
           setIsCommentPanelOpen={setIsCommentPanelOpen}
         />
       ))}
+
+      {/* <Drawer
+        sx={{ width: 400, flexShrink: 0 }}
+        variant="permanent"
+        anchor="right"
+        PaperProps={{ style: { width: 400 } }}
+      >
+        <Box sx={{ width: 400 }}>
+          <h3>Drawer Content</h3>
+          <p>Additional controls or information can go here.</p>
+        </Box>
+        <Accordion sx={{ width: 400, marginTop: 'auto' }}>
+          <AccordionSummary
+            expandIcon={<ExpandMoreIcon />}
+            aria-controls="panel1a-content"
+            id="panel1a-header"
+          >
+            <p>Requirements</p>
+          </AccordionSummary>
+          <AccordionDetails>
+            <TableContainer component={Paper}>
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Requirement</TableCell>
+                    <TableCell>Mapped ID</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {relationships.requirements.map((req, index) => (
+                    <TableRow key={index}>
+                      <TableCell>{req.name}</TableCell>
+                      <TableCell>{req.id}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </AccordionDetails>
+        </Accordion>
+        <Accordion sx={{ width: 400 }}>
+          <AccordionSummary
+            expandIcon={<ExpandMoreIcon />}
+            aria-controls="panel2a-content"
+            id="panel2a-header"
+          >
+            <p>Analyses</p>
+          </AccordionSummary>
+          <AccordionDetails>
+            <TableContainer component={Paper}>
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Analysis Document</TableCell>
+                    <TableCell>Mapped ID</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {relationships.analyses.map((analysis, index) => (
+                    <TableRow key={index}>
+                      <TableCell>{analysis.name}</TableCell>
+                      <TableCell>{analysis.id}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </AccordionDetails>
+        </Accordion>
+      </Drawer> */}
     </div>
   );
 };
