@@ -32,20 +32,33 @@ const RequirementsAccordion = () => {
 
   const fetchDocuments = async (label) => {
     try {
-      const formatted = label.replace(" ", "");
-      const response = await axios.get(`http://127.0.0.1:8002/graph/nodes/${formatted}`);
-      const columns = [
-        { field: 'name', headerName: 'Name', width: 150, editable: true },
-        { field: 'mass', headerName: 'Mass', width: 150, editable: true },
-        { field: 'value', headerName: 'Value', width: 150, editable: true }
-      ];
+      const response = await axios.get(`http://127.0.0.1:8002/graph/nodes/${label}`);
+      const data = response.data
 
-      const rows = response.data.map((item, index) => ({
-        id: index + 1,
-        name: item.name || null,
-        mass: item.mass || null,
-        value: item.value || null
+      var allowedProperties = []
+      if (rules) {
+        console.log(rules)
+        allowedProperties = rules[label].allowed_properties;
+      } else {
+        console.error(`Label "${label}" not found.`);
+      }
+
+      // Create the columns Object for datagrid (only column types allowed are the allowed properies for the node's Label type)
+      const columns = allowedProperties.map((property) => ({
+        field: property,
+        headerName: property.charAt(0).toUpperCase() + property.slice(1), // Capitalize the first letter
+        width: 150,
+        editable: true,
       }));
+
+      console.log("data:\n" + data)
+
+      // Create the rows Object for datagrid (keys must match the column fields above)
+      //   this just renames the uuid field to id, because the datagrid object requires that field name for unique rows
+      const rows = data.map(item => {
+        const { uuid, ...rest } = item;
+        return { id: uuid, ...rest };
+      });
 
       setDocuments((prevDocuments) => ({
         ...prevDocuments,
@@ -72,12 +85,15 @@ const RequirementsAccordion = () => {
   const handleSaveNewRow = async (label, id) => {
     const newRow = documents[label].rows.find((row) => row.id === id && row.isNew);
     if (newRow) {
+      console.log(newRow)
       try {
-        await axios.post(`http://127.0.0.1:8002/graph/node/${label}/${newRow.name}`, {
-          // name: newRow.name,
-          mass: newRow.mass,
-          value: newRow.value
+        const postBody = {};
+        Object.keys(newRow).forEach((key) => {
+          if (key !== 'isNew' && key !== 'isUpdated' && key !== 'id' && key !== 'uuid') {
+            postBody[key] = newRow[key];
+          }
         });
+        await axios.post(`http://127.0.0.1:8002/graph/node/${label}/${newRow.name}`, postBody);
         fetchDocuments(label); // Refresh document list for the label
       } catch (error) {
         console.error('Error submitting new row:', error);
@@ -85,10 +101,25 @@ const RequirementsAccordion = () => {
     }
   };
 
+  const handleSaveUpdatedRow = async (label, id) => {
+    const updatedRow = documents[label].rows.find((row) => row.id === id && row.isUpdated);
+    if (updatedRow) {
+      try {
+        await axios.patch(`http://127.0.0.1:8002/graph/node/${label}/${updatedRow.name}`, {
+          mass: updatedRow.mass,
+          value: updatedRow.value
+        });
+        fetchDocuments(label); // Refresh document list for the label
+      } catch (error) {
+        console.error('Error updating row:', error);
+      }
+    }
+  };
+
   const processRowUpdate = (label, newRow) => {
     setDocuments((prevDocuments) => {
       const updatedRows = prevDocuments[label].rows.map((row) =>
-        row.id === newRow.id ? newRow : row
+        row.id === newRow.id ? { ...newRow, isUpdated: true } : row
       );
       return {
         ...prevDocuments,
@@ -104,7 +135,7 @@ const RequirementsAccordion = () => {
   return (
     <div>
       {availableLabels.map((label) => (
-        <Accordion key={label} expanded={expanded === label} onChange={() => {
+        <Accordion style={{width: "80%"}} key={label} expanded={expanded === label} onChange={() => {
           setExpanded(expanded === label ? '' : label);
           if (!documents[label]) {
             fetchDocuments(label);
@@ -128,12 +159,22 @@ const RequirementsAccordion = () => {
                   />
                   {documents[label].rows.filter((row) => row.isNew).map((row) => (
                     <Button
-                      key={row.id}
+                      key={`new-${row.id}`}
                       variant="contained"
                       onClick={() => handleSaveNewRow(label, row.id)}
                       style={{ marginTop: '10px' }}
                     >
                       Save Row {row.id}
+                    </Button>
+                  ))}
+                  {documents[label].rows.filter((row) => row.isUpdated).map((row) => (
+                    <Button
+                      key={`updated-${row.id}`}
+                      variant="contained"
+                      onClick={() => handleSaveUpdatedRow(label, row.id)}
+                      style={{ marginTop: '10px', marginLeft: '10px' }}
+                    >
+                      Save Row Update {row.id}
                     </Button>
                   ))}
                 </div>
