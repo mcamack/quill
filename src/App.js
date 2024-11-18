@@ -1,6 +1,6 @@
 import React from 'react';
 import Workspace from './Workspace';
-import RequirementsAccordion from './RequirementsAccordion';
+import AccordionList from './AccordionList';
 
 function App() {
   return (
@@ -8,7 +8,7 @@ function App() {
       <main>
         <div>
           <Workspace />
-          <RequirementsAccordion />
+          <AccordionList />
         </div>
       </main>
     </div>
