@@ -21,7 +21,6 @@ const ArtifactAccordion = ({ label, rules }) => {
     const [columns, setColumns] = useState([]);
     const [editingRow, setEditingRow] = useState(null); // Track the currently edited row
     const [dialogOpen, setDialogOpen] = useState(false);
-    const [pendingEdit, setPendingEdit] = useState(null); // Track the pending row edit
     const [newRowPending, setNewRowPending] = useState(false);
 
     // Get the allowed properties for this Label from the Rules
@@ -89,22 +88,45 @@ const ArtifactAccordion = ({ label, rules }) => {
         setNewRowPending(true);
     };
 
-    const handleSaveNewRow = async (label) => {
-        const newRow = rows.find((row) => row.id === 31415926535 && row.isNew);
+    // const handleSaveNewRow = async () => {
+    //     const newRow = rows.find((row) => row.id === 31415926535 && row.isNew);
 
+    //     // Don't submit if the newRow isn't found or if it's name field is empty
+    //     console.log("NEWROW: \n" + newRow.name)
+    //     if (!newRow || !newRow.name) {
+    //         console.log("ERROR: new row needs name");
+    //     } else {
+    //         try {
+    //             const postBody = {};
+    //             Object.keys(newRow).forEach((key) => {
+    //                 if (key !== 'isNew' && key !== 'isUpdated' && key !== 'id' && key !== 'uuid') {
+    //                     postBody[key] = newRow[key];
+    //                 }
+    //             });
+    //             await axios.post(`http://127.0.0.1:8002/graph/node/${label}/${newRow.name}`, postBody);
+    //             reset();
+    //             fetchArtifacts(); // Refresh document list for the label
+    //         } catch (error) {
+    //             console.error('Error submitting new row:', error);
+    //         }
+    //     }
+    // };
+
+    const handleSaveNewRow = async () => {
         // Don't submit if the newRow isn't found or if it's name field is empty
-        if (!newRow || !newRow.name) {
+        console.log("NEWROW: \n" + editingRow.name)
+        if (!editingRow || !editingRow.name) {
             console.log("ERROR: new row needs name");
         } else {
             try {
                 const postBody = {};
-                Object.keys(newRow).forEach((key) => {
+                Object.keys(editingRow).forEach((key) => {
                     if (key !== 'isNew' && key !== 'isUpdated' && key !== 'id' && key !== 'uuid') {
-                        postBody[key] = newRow[key];
+                        postBody[key] = editingRow[key];
                     }
                 });
-                await axios.post(`http://127.0.0.1:8002/graph/node/${label}/${newRow.name}`, postBody);
-                setNewRowPending(false);
+                await axios.post(`http://127.0.0.1:8002/graph/node/${label}/${editingRow.name}`, postBody);
+                reset();
                 fetchArtifacts(); // Refresh document list for the label
             } catch (error) {
                 console.error('Error submitting new row:', error);
@@ -121,52 +143,56 @@ const ArtifactAccordion = ({ label, rules }) => {
             // Return the updated rows array
             return updatedRows;
         });
+        reset();
+    };
+
+    const handleSaveUpdatedRow = async () => {
+        // const updatedRow = rows.find((row) => row.id === id && row.isUpdated);
+        if (editingRow) {
+            try {
+                const postBody = {};
+                Object.keys(editingRow).forEach((key) => {
+                    if (key !== 'isNew' && key !== 'isUpdated' && key !== 'id' && key !== 'uuid') {
+                        postBody[key] = editingRow[key];
+                    }
+                });
+                await axios.patch(`http://127.0.0.1:8002/graph/node/${label}/${editingRow.name}`, postBody);
+                reset();
+                fetchArtifacts(); // Refresh document list for the label
+            } catch (error) {
+                console.error('Error updating row:', error);
+            }
+        }
+    };
+
+    const processRowUpdate = (latestEditedRow) => {
+        console.log("latestEditedRow: \n" + latestEditedRow.id)
+
+        // We already started editing a row, now we're editing another row that's not that one
+        console.log("EDITINGROW: \n" + editingRow)
+        if (editingRow && editingRow.id !== latestEditedRow.id) {
+            setDialogOpen(true);
+            return editingRow; // Prevent switching until user confirms
+        }
+
+        setEditingRow(latestEditedRow);
+        return latestEditedRow
+    };
+
+    const handleProcessRowUpdateError = (error) => {
+        console.error('Error processing row update:', error);
+    };
+
+    const handleDiscardRowChanges = () => {
+        reset();
+        fetchArtifacts(); // Refresh document list for the label
+    };
+
+    const reset = () => {
+        setEditingRow(null);
         setNewRowPending(false);
-    };
-
-    // const handleSaveUpdatedRow = async (label, id) => {
-    //     const updatedRow = artifacts[label].rows.find((row) => row.id === id && row.isUpdated);
-    //     if (updatedRow) {
-    //         try {
-    //             await axios.patch(`http://127.0.0.1:8002/graph/node/${label}/${updatedRow.name}`, {
-    //                 mass: updatedRow.mass,
-    //                 value: updatedRow.value,
-    //             });
-    //             fetchArtifacts(label); // Refresh document list for the label
-    //         } catch (error) {
-    //             console.error('Error updating row:', error);
-    //         }
-    //     }
-    // };
-
-    const processRowUpdate = (editedRow) => {
-        // if (editingRow && editingRow !== editedRow.id) {
-        //     // If a different row is being edited, show the dialog
-        //     setPendingEdit({ label, newRow: editedRow });
-        //     setDialogOpen(true);
-        //     return editingRow; // Revert to the previous row until the user decides
-        // }
-
-        setEditingRow(editedRow.id);
-        setRows((prevRows) => {
-            const updatedRows = prevRows.map((row) =>
-                row.id === editedRow.id ? { ...editedRow, isUpdated: true } : row
-            );
-            return updatedRows;
-        });
-        return editedRow;
-    };
-
-    // const handleDiscardRowChanges = (discard) => {
-    //     if (discard) {
-    //         setEditingRow(null);
-    //         if (pendingEdit) {
-    //             processRowUpdate(pendingEdit.label, pendingEdit.newRow);
-    //         }
-    //     }
-    //     setDialogOpen(false);
-    //     setPendingEdit(null);
-    // };
+        setDialogOpen(false);
+    }
 
     return (
         <div>
@@ -187,7 +213,7 @@ const ArtifactAccordion = ({ label, rules }) => {
                 <AccordionDetails>
                     {rows.length > 0 && (
                         <>
-                            {!newRowPending ? (
+                            {!newRowPending && !editingRow ? (
                                 <Button
                                     variant="contained"
                                     onClick={() => handleAddRow()}
@@ -195,18 +221,45 @@ const ArtifactAccordion = ({ label, rules }) => {
                                 >
                                     Add Row
                                 </Button>
-                            ) : (
+                            ) : newRowPending && editingRow ? (
                                 <>
                                     <Button
                                         variant="contained"
-                                        onClick={() => handleSaveNewRow(label)}
+                                        onClick={() => handleSaveNewRow()}
                                         style={{ marginBottom: '20px' }}
                                     >
                                         Save Row
                                     </Button>
                                     <Button
                                         variant="contained"
-                                        onClick={() => handleCancelNewRow(label)}
+                                        onClick={() => handleDiscardRowChanges()}
+                                        style={{ marginBottom: '20px', marginLeft: '5px' }}
+                                    >
+                                        Discard New Row
+                                    </Button>
+                                </>
+                            ) : !newRowPending && editingRow ? (
+                                <>
+                                    <Button
+                                        variant="contained"
+                                        onClick={() => handleSaveUpdatedRow()}
+                                        style={{ marginBottom: '20px' }}
+                                    >
+                                        Save Row
+                                    </Button>
+                                    <Button
+                                        variant="contained"
+                                        onClick={() => handleDiscardRowChanges()}
+                                        style={{ marginBottom: '20px', marginLeft: '5px' }}
+                                    >
+                                        Discard Edits
+                                    </Button>
+                                </>
+                            ) : (
+                                <>
+                                    <Button
+                                        variant="contained"
+                                        onClick={() => handleCancelNewRow()}
                                         style={{ marginBottom: '20px', marginLeft: '5px' }}
                                     >
                                         Cancel
@@ -220,6 +273,7 @@ const ArtifactAccordion = ({ label, rules }) => {
                                     pageSize={5}
                                     rowsPerPageOptions={[5]}
                                     processRowUpdate={(row) => processRowUpdate(row)}
+                                    onProcessRowUpdateError={handleProcessRowUpdateError}
                                     experimentalFeatures={{ newEditingApi: true }}
                                     getRowClassName={(params) =>
                                         params.row.isNew ? 'new-row' : ''
@@ -231,48 +285,36 @@ const ArtifactAccordion = ({ label, rules }) => {
                                         },
                                     }}
                                 />
-                                {/* Button to Save the Row Updates */}
-                                {/* {artifacts.rows.filter((row) => row.isNew).map((row) => (
-                                    <Button
-                                        key={`new-${row.id}`}
-                                        variant="contained"
-                                        onClick={() => handleSaveNewRow(label, row.id)}
-                                        style={{ position: 'absolute', bottom: '25px', left: '25px' }}
-                                    >
-                                        Save Row
-                                    </Button>
-                                ))} */}
-                                {/* {artifacts.rows.filter((row) => row.isUpdated && row.id === editingRow).map((row) => (
-                                    <Button
-                                        key={`updated-${row.id}`}
-                                        variant="contained"
-                                        onClick={() => handleSaveUpdatedRow(label, row.id)}
-                                        style={{ marginTop: '10px', marginLeft: '10px' }}
-                                    >
-                                        Save Row Update {row.id}
-                                    </Button>
-                                ))} */}
                             </div>
                         </>
                     )}
                 </AccordionDetails>
             </Accordion>
-            {/* <Dialog open={dialogOpen} onClose={() => handleDiscardRowChanges(false)}>
-                <DialogTitle>Discard Changes?</DialogTitle>
+            <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)}>
+                <DialogTitle>Pending Edits Detected</DialogTitle>
                 <DialogContent>
-                    <DialogContentText>
-                        You are currently editing another row. Do you want to discard your changes and switch to a different row?
-                    </DialogContentText>
+                    {editingRow && label ? (
+                        <DialogContentText>
+                            You are currently editing {label} / {editingRow.name}. Discard or Save current edits before editing another row.
+                        </DialogContentText>
+                    ) : (
+                        <DialogContentText>
+                            You are currently editing another row. Discard or Save current edits before editing another row.
+                        </DialogContentText>
+                    )}
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={() => handleDiscardRowChanges(false)} color="primary">
-                        Cancel
+                    <Button onClick={() => setDialogOpen(false)}>
+                        OK
+                    </Button>
+                    {/* <Button onClick={() => handleDiscardRowChanges(false)} color="primary">
+                        Yes
                     </Button>
                     <Button onClick={() => handleDiscardRowChanges(true)} color="primary">
                         Discard Changes
-                    </Button>
+                    </Button> */}
                 </DialogActions>
-            </Dialog> */}
+            </Dialog>
         </div>
     );
 };
