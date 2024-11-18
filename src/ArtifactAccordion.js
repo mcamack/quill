@@ -11,7 +11,6 @@ import {
     DialogTitle,
 } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import { DataGrid } from '@mui/x-data-grid';
 import axios from 'axios';
 import { ReadWriteDatagrid } from './ReadWriteDatagrid';
 

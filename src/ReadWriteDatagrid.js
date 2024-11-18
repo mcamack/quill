@@ -126,108 +126,104 @@ export const ReadWriteDatagrid = ({ label, allowedProperties, rows, setRows, col
 
     return (
         <>
-            {rows.length > 0 && (
+            {!newRowPending && !editingRow ? (
                 <>
-                    {!newRowPending && !editingRow ? (
-                        <>
-                            {/* No New Row and Not Editing Any Rows */}
-                            <Button
-                                variant="contained"
-                                onClick={() => handleAddRow()}
-                                style={{ marginBottom: '20px' }}
-                            >
-                                Add Row
-                            </Button>
-                        </>
-                    ) : newRowPending && editingRow ? (
-                        <>
-                            {/* New row added, being edited, but not yet submitted */}
-                            <Button
-                                variant="contained"
-                                onClick={() => handleSaveNewRow()}
-                                style={{ marginBottom: '20px' }}
-                            >
-                                Save Row
-                            </Button>
-                            <Button
-                                variant="contained"
-                                onClick={() => handleDiscardRowChanges()}
-                                style={{ marginBottom: '20px', marginLeft: '5px' }}
-                            >
-                                Discard New Row
-                            </Button>
-                        </>
-                    ) : !newRowPending && editingRow ? (
-                        <>
-                            {/* Editing an existing row */}
-                            <Button
-                                variant="contained"
-                                onClick={() => handleSaveUpdatedRow()}
-                                style={{ marginBottom: '20px' }}
-                            >
-                                Save Row
-                            </Button>
-                            <Button
-                                variant="contained"
-                                onClick={() => handleDiscardRowChanges()}
-                                style={{ marginBottom: '20px', marginLeft: '5px' }}
-                            >
-                                Discard Edits
-                            </Button>
-                        </>
-                    ) : (
-                        <>
-                            <Button
-                                variant="contained"
-                                onClick={() => handleCancelNewRow()}
-                                style={{ marginBottom: '20px', marginLeft: '5px' }}
-                            >
-                                Cancel
-                            </Button>
-                        </>
-                    )}
-                    <div style={{ height: 400, width: '100%' }}>
-                        <DataGrid
-                            rows={rows}
-                            columns={columns}
-                            pageSize={5}
-                            rowsPerPageOptions={[5]}
-                            processRowUpdate={(row) => processRowUpdate(row)}
-                            onProcessRowUpdateError={handleProcessRowUpdateError}
-                            experimentalFeatures={{ newEditingApi: true }}
-                            getRowClassName={(params) =>
-                                params.row.thisIsANewDatagridRow123 ? 'new-row' : ''
-                            }
-                            sx={{
-                                "& .new-row": {
-                                    border: '2px solid black',
-                                    borderRadius: '4px',
-                                },
-                            }}
-                        />
-                        <Snackbar
-                            open={open}
-                            autoHideDuration={5000} // Auto-close after 6 seconds
-                            onClose={handleClose}
-                            anchorOrigin={{ vertical: "top", horizontal: "center" }}
-                            sx={{
-                                position: "absolute",
-                                bottom: "20px", // Positioning inside the parent
-                                left: "50%",
-                                transform: "translateX(-50%)", // Center horizontally
-                            }}
-                        >
-                            <Alert
-                                onClose={handleClose}
-                                severity="error"
-                                sx={{ width: "100%" }}
-                            >
-                                {errorMessage}
-                            </Alert>
-                        </Snackbar>
-                    </div>
+                    {/* No New Row and Not Editing Any Rows */}
+                    <Button
+                        variant="contained"
+                        onClick={() => handleAddRow()}
+                        style={{ marginBottom: '20px' }}
+                    >
+                        Add Row
+                    </Button>
+                </>
+            ) : newRowPending && editingRow ? (
+                <>
+                    {/* New row added, being edited, but not yet submitted */}
+                    <Button
+                        variant="contained"
+                        onClick={() => handleSaveNewRow()}
+                        style={{ marginBottom: '20px' }}
+                    >
+                        Save Row
+                    </Button>
+                    <Button
+                        variant="contained"
+                        onClick={() => handleDiscardRowChanges()}
+                        style={{ marginBottom: '20px', marginLeft: '5px' }}
+                    >
+                        Discard New Row
+                    </Button>
+                </>
+            ) : !newRowPending && editingRow ? (
+                <>
+                    {/* Editing an existing row */}
+                    <Button
+                        variant="contained"
+                        onClick={() => handleSaveUpdatedRow()}
+                        style={{ marginBottom: '20px' }}
+                    >
+                        Save Row
+                    </Button>
+                    <Button
+                        variant="contained"
+                        onClick={() => handleDiscardRowChanges()}
+                        style={{ marginBottom: '20px', marginLeft: '5px' }}
+                    >
+                        Discard Edits
+                    </Button>
+                </>
+            ) : (
+                <>
+                    <Button
+                        variant="contained"
+                        onClick={() => handleCancelNewRow()}
+                        style={{ marginBottom: '20px', marginLeft: '5px' }}
+                    >
+                        Cancel
+                    </Button>
                 </>
             )}
+            <div style={{ height: 400, width: '100%' }}>
+                <DataGrid
+                    rows={rows}
+                    columns={columns}
+                    pageSize={5}
+                    rowsPerPageOptions={[5]}
+                    processRowUpdate={(row) => processRowUpdate(row)}
+                    onProcessRowUpdateError={handleProcessRowUpdateError}
+                    experimentalFeatures={{ newEditingApi: true }}
+                    getRowClassName={(params) =>
+                        params.row.thisIsANewDatagridRow123 ? 'new-row' : ''
+                    }
+                    sx={{
+                        "& .new-row": {
+                            border: '2px solid black',
+                            borderRadius: '4px',
+                        },
+                    }}
+                />
+                <Snackbar
+                    open={open}
+                    autoHideDuration={5000} // Auto-close after 6 seconds
+                    onClose={handleClose}
+                    anchorOrigin={{ vertical: "top", horizontal: "center" }}
+                    sx={{
+                        position: "absolute",
+                        bottom: "20px", // Positioning inside the parent
+                        left: "50%",
+                        transform: "translateX(-50%)", // Center horizontally
+                    }}
+                >
+                    <Alert
+                        onClose={handleClose}
+                        severity="error"
+                        sx={{ width: "100%" }}
+                    >
+                        {errorMessage}
+                    </Alert>
+                </Snackbar>
+            </div>
         </>
     )
 }
