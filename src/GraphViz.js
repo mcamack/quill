@@ -143,6 +143,23 @@ const GraphVisualization = () => {
     renderChart(filteredNodes, graphData.links, highlightedNodes, highlightedLinks);
   };
 
+  const handleNodeSearch = (selectedOption) => {
+    if (!selectedOption) {
+      setFilteredNodes(graphData.nodes);
+      renderChart(graphData.nodes, graphData.links);
+      return;
+    }
+
+    const selectedNode = graphData.nodes.find((node) => node.name === selectedOption.value);
+
+    if (!selectedNode) {
+      console.error(`Node with name ${selectedOption.value} not found in graphData.`);
+      return;
+    }
+
+    handleNodeClick(selectedNode.id); // Reuse the `handleNodeClick` functionality
+  };
+
   const handleCloseInfoBox = () => {
     setSelectedNodeInfo(null);
     renderChart(filteredNodes, graphData.links);
@@ -158,7 +175,12 @@ const GraphVisualization = () => {
     }
   }, [filteredNodes]);
 
-  const nodeOptions = Array.from(
+  const nodeOptions = graphData.nodes.map((node) => ({
+    value: node.name,
+    label: node.name,
+  }));
+
+  const labelOptions = Array.from(
     new Set(graphData.nodes.map((node) => node.label[0]))
   ).map((label) => ({
     value: label,
@@ -167,14 +189,24 @@ const GraphVisualization = () => {
 
   return (
     <div>
-      <div style={{ marginBottom: "20px", width: "300px" }}>
-        <Select
-          isMulti
-          options={nodeOptions}
-          value={selectedNodeLabels}
-          onChange={handleFilterChange}
-          placeholder="Filter by Node Labels"
-        />
+      <div style={{ marginBottom: "20px", display: "flex", gap: "10px" }}>
+        <div style={{ width: "300px" }}>
+          <Select
+            isMulti
+            options={labelOptions}
+            value={selectedNodeLabels}
+            onChange={handleFilterChange}
+            placeholder="Filter by Node Labels"
+          />
+        </div>
+        <div style={{ width: "300px" }}>
+          <Select
+            options={nodeOptions}
+            isClearable
+            onChange={handleNodeSearch}
+            placeholder="Search Nodes by Name"
+          />
+        </div>
       </div>
       <div ref={chartRef} style={{ width: "100%", height: "90vh" }}></div>
 
