@@ -10,13 +10,14 @@ const GraphVisualization = () => {
   const [filteredNodes, setFilteredNodes] = useState([]); // Nodes to display
   const [selectedNodeLabels, setSelectedNodeLabels] = useState([]); // Selected labels from dropdown
   const [selectedNodeInfo, setSelectedNodeInfo] = useState(null); // Selected node details
+  const [nodeProperties, setNodeProperties] = useState(null); // Fetched properties of the clicked node
 
   useEffect(() => {
     if (chartRef.current) {
       chartInstance.current = echarts.init(chartRef.current);
     }
 
-    axios.get("/fake_graph_data.json") // Replace with your actual data URL
+    axios.get("/fake_graph_data.json") // Correct file name
       .then((response) => {
         setGraphData(response.data);
         setFilteredNodes(response.data.nodes); // Initially display all nodes
@@ -113,7 +114,7 @@ const GraphVisualization = () => {
     renderChart(filtered, filteredLinks);
   };
 
-  const handleNodeClick = (clickedNodeId) => {
+  const handleNodeClick = async (clickedNodeId) => {
     const clickedNode = filteredNodes.find((node) => node.id === clickedNodeId);
 
     if (!clickedNode) {
@@ -141,6 +142,14 @@ const GraphVisualization = () => {
 
     setSelectedNodeInfo(nodeInfo);
     renderChart(filteredNodes, graphData.links, highlightedNodes, highlightedLinks);
+
+    // Fetch properties of the clicked node
+    try {
+      const response = await axios.get(`/graph/node/${clickedNodeId}`);
+      setNodeProperties(response.data); // Set the fetched properties
+    } catch (error) {
+      console.error(`Error fetching properties for node ${clickedNodeId}:`, error);
+    }
   };
 
   const handleNodeSearch = (selectedOption) => {
@@ -162,6 +171,7 @@ const GraphVisualization = () => {
 
   const handleCloseInfoBox = () => {
     setSelectedNodeInfo(null);
+    setNodeProperties(null); // Clear node properties when closing
     renderChart(filteredNodes, graphData.links);
   };
 
@@ -239,14 +249,20 @@ const GraphVisualization = () => {
           >
             Close
           </button>
-          <h3>Selected Node</h3>
+          <h3>Selected Artifact</h3>
           <p>{selectedNodeInfo.selectedNode}</p>
-          <h4>Connected Nodes</h4>
+          <h4>Connects to:</h4>
           <ul>
             {selectedNodeInfo.connectedNodes.map((node, index) => (
               <li key={index}>{node}</li>
             ))}
           </ul>
+          {nodeProperties && (
+            <>
+              <h4>Node Properties</h4>
+              <pre>{JSON.stringify(nodeProperties, null, 2)}</pre>
+            </>
+          )}
         </div>
       )}
     </div>
