@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import * as echarts from "echarts";
 import axios from "axios";
 import Select from "react-select";
+import CloseIcon from '@mui/icons-material/Close';
 
 const GraphVisualization = () => {
   const chartRef = useRef(null);
@@ -65,9 +66,9 @@ const GraphVisualization = () => {
             symbolSize: 50,
             itemStyle: highlightedNodes
               ? {
-                  color: highlightedNodes.has(node.id) ? undefined : "#d3d3d3", // Highlighted nodes keep their color; others are grayed out
-                  opacity: highlightedNodes.has(node.id) ? 1 : 0.5,
-                }
+                color: highlightedNodes.has(node.id) ? undefined : "#d3d3d3", // Highlighted nodes keep their color; others are grayed out
+                opacity: highlightedNodes.has(node.id) ? 1 : 0.5,
+              }
               : {}, // Default styles
           })),
           links: (links || []).map((link) => ({
@@ -75,9 +76,9 @@ const GraphVisualization = () => {
             target: link.target,
             lineStyle: highlightedLinks
               ? {
-                  color: highlightedLinks.includes(link) ? undefined : "#d3d3d3", // Highlighted links keep their color
-                  opacity: highlightedLinks.includes(link) ? 1 : 0.5,
-                }
+                color: highlightedLinks.includes(link) ? undefined : "#d3d3d3", // Highlighted links keep their color
+                opacity: highlightedLinks.includes(link) ? 1 : 0.5,
+              }
               : {}, // Default styles
           })),
           categories: uniqueCategories.map((category) => ({
@@ -145,7 +146,7 @@ const GraphVisualization = () => {
 
     // Fetch properties of the clicked node
     try {
-      const response = await axios.get(`/graph/node/${clickedNodeId}`);
+      const response = await axios.get(`http://127.0.0.1:8002/graph/uuid/node/${clickedNodeId}`);
       setNodeProperties(response.data); // Set the fetched properties
     } catch (error) {
       console.error(`Error fetching properties for node ${clickedNodeId}:`, error);
@@ -226,7 +227,7 @@ const GraphVisualization = () => {
             position: "absolute",
             top: "20px",
             right: "20px",
-            padding: "10px",
+            padding: "20px",
             backgroundColor: "white",
             border: "1px solid #ccc",
             borderRadius: "5px",
@@ -236,27 +237,50 @@ const GraphVisualization = () => {
           <button
             style={{
               position: "absolute",
-              top: "5px",
-              right: "5px",
-              backgroundColor: "red",
-              color: "white",
+              top: "15px",
+              right: "15px",
+              backgroundColor: "white",
+              color: "gray",
               border: "none",
-              borderRadius: "3px",
+              borderRadius: "20%",
               cursor: "pointer",
-              padding: "5px",
+              padding: "10px",
+              transition: "transform 0.2s, background-color 0.2s",
             }}
             onClick={handleCloseInfoBox}
+            onMouseEnter={(e) => {
+              e.target.style.color = "white";
+              e.target.style.opacity = 0.5;
+              e.target.style.backgroundColor = "gray";
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.color = "gray";
+              e.target.style.backgroundColor = "white";
+            }}
           >
-            Close
+            <CloseIcon sx={{ position: 'relative', top: '2px' }} />
           </button>
           <h3>Selected Artifact</h3>
-          <p>{selectedNodeInfo.selectedNode}</p>
-          <h4>Connects to:</h4>
-          <ul>
-            {selectedNodeInfo.connectedNodes.map((node, index) => (
-              <li key={index}>{node}</li>
-            ))}
-          </ul>
+          {/* <p>{selectedNodeInfo.selectedNode}</p> */}
+          <h2>{selectedNodeInfo.selectedNode}</h2>
+          <h4>Related to:</h4>
+          <div style={{ maxHeight: "400px", overflow: "scroll" }}>
+
+              {selectedNodeInfo.connectedNodes.map((node, index) => (
+                <div
+                  key={index}
+                  style={{ cursor: "pointer", color: "blue", textDecoration: "underline" }} // To indicate that it's clickable
+                  onClick={() => {
+                    const selectedNode = graphData.nodes.find(n => n.name === node);
+                    if (selectedNode) {
+                      handleNodeClick(selectedNode.id);
+                    }
+                  }}
+                >
+                  {node}
+                </div>
+              ))}
+          </div>
           {nodeProperties && (
             <>
               <h4>Node Properties</h4>
