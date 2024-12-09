@@ -119,6 +119,7 @@ const AddRelationshipBox = () => {
         control: (provided) => ({
             ...provided,
             border: '2px solid black',
+            textAlign: 'left'
         }),
         menuPortal: (provided) => ({
             ...provided,
@@ -152,8 +153,8 @@ const AddRelationshipBox = () => {
                     <DialogContent>
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
                             <span>
-                                <div style={{ width: '270px', position: 'relative', top: '24px' }}>
-                                    <label>Source Node Type</label>
+                                <div style={{ width: '270px', position: 'relative', top: '24px',  textAlign: 'center'}}>
+                                    <label >Source</label>
                                     <Select
                                         options={sourceNodeOptions}
                                         value={sourceNodeType}
@@ -164,10 +165,11 @@ const AddRelationshipBox = () => {
                                         }}
                                         styles={customNodeSelectStyles}
                                         menuPortalTarget={document.body}
+                                        placeholder="Label"
                                     />
                                 </div>
-                                <div style={{ width: '270px', position: 'relative', top: '24px' }}>
-                                    <label>Source Node Name</label>
+                                <div style={{ width: '270px', position: 'relative', top: '22px' }}>
+                                    {/* <label>Source Node Name</label> */}
                                     <Select
                                         options={sourceNodeType ? sourceNodeType.options2 : []}
                                         value={sourceNodeName}
@@ -178,12 +180,12 @@ const AddRelationshipBox = () => {
                                         styles={customNodeSelectStyles}
                                         isDisabled={!sourceNodeType}
                                         menuPortalTarget={document.body}
-                                        placeholder=""
+                                        placeholder="Name"
                                     />
                                 </div>
                             </span>
-                            <div style={{ width: '240px', textAlign: 'center', position: 'relative', top: '20px' }}>
-                                <label>Relationship Type</label>
+                            <div style={{ width: '240px', textAlign: 'center', position: 'relative', top: '22px' }}>
+                                {/* <label>Relationship Type</label> */}
                                 <Select
                                     options={relationshipOptions}
                                     value={relationshipType}
@@ -196,12 +198,12 @@ const AddRelationshipBox = () => {
                                     styles={customRelationshipSelectStyles}
                                     isDisabled={!sourceNodeType || !sourceNodeName || !targetNodeType || !targetNodeName}
                                     menuPortalTarget={document.body}
-                                    placeholder=""
+                                    placeholder="Relationship Type"
                                 />
                             </div>
                             <span>
-                                <div style={{ width: '270px', position: 'relative', top: '24px' }}>
-                                    <label>Target Node Type</label>
+                                <div style={{ width: '270px', position: 'relative', top: '24px',  textAlign: 'center' }}>
+                                    <label>Target</label>
                                     <Select
                                         options={targetNodeOptions}
                                         value={targetNodeType}
@@ -213,11 +215,11 @@ const AddRelationshipBox = () => {
                                         styles={customNodeSelectStyles}
                                         isDisabled={!sourceNodeType}
                                         menuPortalTarget={document.body}
-                                        placeholder=""
+                                        placeholder="Label"
                                     />
                                 </div>
-                                <div style={{ width: '270px', position: 'relative', top: '24px' }}>
-                                    <label>Target Node Name</label>
+                                <div style={{ width: '270px', position: 'relative', top: '22px' }}>
+                                    {/* <label>Target Node Name</label> */}
                                     <Select
                                         options={targetNodeType ? targetNodeType.options2 : []}
                                         value={targetNodeName}
@@ -228,12 +230,12 @@ const AddRelationshipBox = () => {
                                         styles={customNodeSelectStyles}
                                         isDisabled={!targetNodeType}
                                         menuPortalTarget={document.body}
-                                        placeholder=""
+                                        placeholder="Name"
                                     />
                                 </div>
                             </span>
                         </div>
-                        <div style={{ marginTop: '2rem', top: '-28px', position: 'relative', width: '412px', height: '2px', backgroundColor: 'black', marginLeft: 'auto', marginRight: 'auto' }}>
+                        <div style={{ marginTop: '2rem', top: '-30px', position: 'relative', width: '412px', height: '2px', backgroundColor: 'black', marginLeft: 'auto', marginRight: 'auto' }}>
                             <div style={{
                                 width: '0',
                                 height: '0',
