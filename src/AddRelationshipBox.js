@@ -105,8 +105,8 @@ const AddRelationshipBox = () => {
     ];
 
     const relationshipOptions = [
-        { label: 'Relationship 1', value: 'RELATIONSHIP_1' },
-        { label: 'Relationship 2', value: 'RELATIONSHIP_2' },
+        { label: 'decomposes', value: 'decomposes' },
+        { label: 'extends', value: 'extends' },
         // Add more relationship options as needed
     ];
 
